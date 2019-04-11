@@ -43,15 +43,18 @@ jobs:
 
     - stage: rustfmt
       os: linux
-      before_script:
+      install:
         - travis_wait rustup component add rustfmt
+      before_script:
+        - ./autogen.sh && ./configure --without-all
       script:
         - ./.travis-format.sh
 
     - stage: clippy
       os: linux
-      before_script:
+      install:
         - travis_wait rustup component add clippy
+      before_script:
         - ./autogen.sh && ./configure --without-all
       script:
         - make clippy
@@ -82,6 +85,14 @@ matrix:
     -
       <<: *linux-with-x
       env: CHECKING=glyphs WINDOW_SYSTEM=yes
+
+before_script:
+  - test "$WINDOW_SYSTEM" = "yes" && CONFIGURE_FLAGS='--without-makeinfo --with-x=no --with-ns=no --without-gconf --without-gsettings'
+  - >
+    ./autogen.sh &&
+    ./configure $CONFIGURE_FLAGS \
+                RUSTFLAGS="-Dwarnings" \
+                WERROR_CFLAGS='-Werror -Wno-error=deprecated-declarations'
 
 script:
   - printenv
