@@ -1,9 +1,9 @@
 language: rust
 
-os:
-  - linux
-  - osx
-  - windows
+#os:
+#  - linux
+#  - osx
+#  - windows
 
 addons:
   apt:
@@ -29,6 +29,7 @@ env:
     - CARGO_FLAGS="--features strict"
   matrix:
     - CHECKING=no WINDOW_SYSTEM=no
+    - CHECKING=glyphs WINDOW_SYSTEM=no
     - CHECKING=no WINDOW_SYSTEM=yes
     - CHECKING=glyphs WINDOW_SYSTEM=yes
 
@@ -48,8 +49,21 @@ matrix:
   exclude:
     - os: osx
       env: CHECKING=no WINDOW_SYSTEM=no
+    - os: osx
+      env: CHECKING=glyphs WINDOW_SYSTEM=no
     - os: windows
       env: CHECKING=no WINDOW_SYSTEM=no
+    - os: windows
+      env: CHECKING=glyphs WINDOW_SYSTEM=no
+
+  include:
+    - &linux-with-x
+      os: linux
+      env: CHECKING=no WINDOW_SYSTEM=yes
+      addons: {apt: {packages: [libgtk3-dev]}}
+    -
+      <<: *linux-with-x
+      env: CHECKING=glyphs WINDOW_SYSTEM=yes
 
 jobs:
   include:
@@ -57,20 +71,17 @@ jobs:
     - stage: rustfmt
       os: linux
       before_script:
-        - travis_wait rustup install $(cat rust-toolchain)
         - travis_wait rustup component add rustfmt
       script:
-        - printenv
+        - ./travis-format.sh
 
     - stage: clippy
       os: linux
       before_script:
-        - travis_wait rustup install $(cat rust-toolchain)
         - travis_wait rustup component add clippy
+        - ./autogen.sh && ./configure --without-all
       script:
-        - printenv
+        - make clippy
 
-before_script:
-  - travis_wait rustup install $(cat rust-toolchain)
 script:
   - printenv
