@@ -1,9 +1,9 @@
 language: rust
 
-#os:
-#  - linux
-#  - osx
-#  - windows
+os:
+  - linux
+  - osx
+  - windows
 
 addons:
   apt:
@@ -38,6 +38,24 @@ stages:
   - clippy
   - test
 
+jobs:
+  include:
+
+    - stage: rustfmt
+      os: linux
+      before_script:
+        - travis_wait rustup component add rustfmt
+      script:
+        - ./.travis-format.sh
+
+    - stage: clippy
+      os: linux
+      before_script:
+        - travis_wait rustup component add clippy
+        - ./autogen.sh && ./configure --without-all
+      script:
+        - make clippy
+
 matrix:
   fast_finish: true
 
@@ -64,24 +82,6 @@ matrix:
     -
       <<: *linux-with-x
       env: CHECKING=glyphs WINDOW_SYSTEM=yes
-
-jobs:
-  include:
-
-    - stage: rustfmt
-      os: linux
-      before_script:
-        - travis_wait rustup component add rustfmt
-      script:
-        - ./travis-format.sh
-
-    - stage: clippy
-      os: linux
-      before_script:
-        - travis_wait rustup component add clippy
-        - ./autogen.sh && ./configure --without-all
-      script:
-        - make clippy
 
 script:
   - printenv
