@@ -28,27 +28,28 @@ env:
     - RUST_BACKTRACE=1
     - CARGO_FLAGS="--features strict"
   matrix:
-    - CHECKING=no WINDOW_SYSTEM=0
-    - CHECKING=no WINDOW_SYSTEM=1
-    - CHECKING=glyphs WINDOW_SYSTEM=1
+    - CHECKING=no WINDOW_SYSTEM=no
+    - CHECKING=no WINDOW_SYSTEM=yes
+    - CHECKING=glyphs WINDOW_SYSTEM=yes
 
 stages:
   - rustfmt
   - clippy
   - test
 
-allow_failures:
-  - os: osx
-  - os: windows
-  - stage: clippy
-
 matrix:
   fast_finish: true
+
+  allow_failures:
+    - os: osx
+    - os: windows
+    - stage: clippy
+
   exclude:
     - os: osx
-      env: CHECKING=no WINDOW_SYSTEM=0
+      env: CHECKING=no WINDOW_SYSTEM=no
     - os: windows
-      env: CHECKING=no WINDOW_SYSTEM=0
+      env: CHECKING=no WINDOW_SYSTEM=no
 
 jobs:
   include:
@@ -69,8 +70,7 @@ jobs:
       script:
         - printenv
 
-    - stage: test
-      before_script:
-        - travis_wait rustup install $(cat rust-toolchain)
-      script:
-        - printenv
+before_script:
+  - travis_wait rustup install $(cat rust-toolchain)
+script:
+  - printenv
