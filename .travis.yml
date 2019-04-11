@@ -46,7 +46,7 @@ jobs:
       install:
         - travis_wait rustup component add rustfmt
       before_script:
-        - ./autogen.sh && ./configure --without-all
+        - ./autogen.sh && ./configure --without-all --with-x-toolkit=no
       script:
         - ./.travis-format.sh
 
@@ -55,7 +55,7 @@ jobs:
       install:
         - travis_wait rustup component add clippy
       before_script:
-        - ./autogen.sh && ./configure --without-all
+        - ./autogen.sh && ./configure --without-all --with-x-toolkit=no
       script:
         - make clippy
 
@@ -87,12 +87,15 @@ matrix:
       env: CHECKING=glyphs WINDOW_SYSTEM=yes
 
 before_script:
-  - test "$WINDOW_SYSTEM" = "yes" && CONFIGURE_FLAGS='--without-makeinfo --with-x=no --with-ns=no --without-gconf --without-gsettings'
+  - CONFIGURE_FLAGS="--enable-checking=$CHECKING"
   - >
-    ./autogen.sh &&
-    ./configure $CONFIGURE_FLAGS \
-                RUSTFLAGS="-Dwarnings" \
-                WERROR_CFLAGS='-Werror -Wno-error=deprecated-declarations'
+    test "$WINDOW_SYSTEM" = "yes"
+    && CONFIGURE_FLAGS="$CONFIGURE_FLAGS --without-makeinfo --with-x=no --with-ns=no --without-gconf --without-gsettings"
+  - >
+    ./autogen.sh
+    && ./configure $CONFIGURE_FLAGS \
+                   RUSTFLAGS="-Dwarnings" \
+                   WERROR_CFLAGS='-Werror -Wno-error=deprecated-declarations'
 
 script:
   - printenv
