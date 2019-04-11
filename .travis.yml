@@ -24,8 +24,13 @@ cache:
     - $HOME/.rustup
 
 env:
-  - CHECKS=glyphs
-  - CHECKS=
+  global:
+    - RUST_BACKTRACE=1
+    - CARGO_FLAGS="--features strict"
+  matrix:
+    - CHECKS=
+    - CHECKS=glyphs
+    - TRAVIS_WITH_NO_WINDOW_SYSTEM=1
 
 stages:
   - rustfmt
@@ -39,21 +44,33 @@ allow_failures:
 
 matrix:
   fast_finish: true
+  exclude:
+    - os: osx
+      env: TRAVIS_WITH_NO_WINDOW_SYSTEM=1
+    - os: windows
+      env: TRAVIS_WITH_NO_WINDOW_SYSTEM=1
 
 jobs:
   include:
+
     - stage: rustfmt
-      name: "Ensure code is formatted"
+      os: linux
+      before_script:
+        - travis_wait rustup install $(cat rust-toolchain)
+        - travis_wait rustup component add rustfmt
       script:
-        - echo rustfmt
         - printenv
+
     - stage: clippy
-      name: "Run Clippy checks"
+      os: linux
+      before_script:
+        - travis_wait rustup install $(cat rust-toolchain)
+        - travis_wait rustup component add clippy
       script:
-        - echo clippy
         - printenv
+
     - stage: test
-      name: "Run tests"
+      before_script:
+        - travis_wait rustup install $(cat rust-toolchain)
       script:
-        - echo test
         - printenv
